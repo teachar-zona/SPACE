@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مغامرة علوم الكون - ابدأ الرحلة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background: #0b0d17; color: #e2e8f0; overflow-x: hidden; margin: 0; }
+        .space-bg { background: radial-gradient(circle at 50% 50%, #1b2735 0%, #090a0f 100%); min-height: 100vh; }
+        
+        .card { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 2rem; 
+            padding: 2rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: #0b0d17;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        .nav-step {
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            opacity: 0.5;
+            white-space: nowrap;
+        }
+        .nav-step.active { 
+            opacity: 1; 
+            background: rgba(59, 130, 246, 0.2); 
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-choice { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            transition: all 0.2s; 
+            width: 100%; 
+            text-align: right; 
+            padding: 1.2rem; 
+            border-radius: 1rem; 
+            margin-bottom: 0.8rem; 
+        }
+        .btn-choice.selected { border-color: #3b82f6 !important; background: rgba(59, 130, 246, 0.3) !important; }
+
+        .star-option {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid transparent;
+            position: relative;
+        }
+        .star-blue { background: #3b82f6; box-shadow: 0 0 25px rgba(59, 130, 246, 0.6); }
+        .star-yellow { background: #fbbf24; box-shadow: 0 0 25px rgba(251, 191, 36, 0.6); }
+        .star-red { background: #ef4444; box-shadow: 0 0 25px rgba(239, 68, 68, 0.6); }
+        .star-option.selected { border-color: white; transform: scale(1.1); box-shadow: 0 0 45px white; }
+
+        .hidden { display: none; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .rocket-anim { animation: float 3s ease-in-out infinite; }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 999px;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="space-bg">
+
+    <!-- شاشة البداية عند فتح الرابط -->
+    <div id="splash-screen">
+        <div class="rocket-anim text-7xl mb-6">🚀</div>
+        <h1 class="text-4xl font-bold text-white mb-4">مغامرة علوم الكون</h1>
+        <p class="text-blue-300 mb-8">استعدي للرحلة في الفضاء سبيسيا..</p>
+        <button onclick="startApp()" class="bg-blue-600 hover:bg-blue-500 text-white px-12 py-4 rounded-full font-bold text-xl transition-all transform hover:scale-105 shadow-xl">
+            ابدأ المغامرة الآن
+        </button>
+    </div>
+
+    <div id="toast">تم نسخ النتيجة للمشاركة! 🚀</div>
+
+    <div id="main-content" class="max-w-4xl mx-auto px-4 py-8 hidden">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-white mb-6">مغامرة علوم الكون</h1>
+            
+            <div class="flex flex-wrap justify-center gap-2 mb-6">
+                <div id="step-1" class="nav-step active">1. الضوء</div>
+                <div id="step-2" class="nav-step">2. المناظير</div>
+                <div id="step-3" class="nav-step">3. النجوم</div>
+                <div id="step-4" class="nav-step">4. الحياة</div>
+                <div id="step-5" class="nav-step">5. المجرات</div>
+            </div>
+
+            <div class="w-full bg-gray-800 h-2 rounded-full max-w-md mx-auto overflow-hidden">
+                <div id="progress-bar" class="bg-blue-500 h-full transition-all duration-500" style="width: 5%"></div>
+            </div>
+        </div>
+
+        <!-- Quiz Area -->
+        <div id="quiz-container" class="card">
+            <div id="question-area"></div>
+            <div class="mt-8 flex justify-center">
+                <button id="next-btn" onclick="submitAnswer()" class="bg-blue-600 px-14 py-4 rounded-2xl font-bold text-white shadow-lg hidden">
+                    تأكيد وإكمال ⬅️
+                </button>
+            </div>
+        </div>
+
+        <!-- Mastery -->
+        <div id="mastery-container" class="card hidden border-yellow-500/30 bg-yellow-500/5">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-yellow-400">جولة الإتقان 🔁</h2>
+                <p class="text-gray-300">مراجعة سريعة للمعلومات التي تحتاج لتثبيت</p>
+            </div>
+            <div id="mastery-area"></div>
+            <button onclick="submitMastery()" class="w-full mt-8 bg-yellow-600 py-4 rounded-2xl font-bold text-white">تحقق من الإتقان</button>
+        </div>
+
+        <!-- Result -->
+        <div id="result-screen" class="card hidden text-center">
+            <div class="text-6xl mb-4">🏆</div>
+            <h2 class="text-3xl font-bold text-green-400 mb-2">رائعة! لقد أتممتِ المهمة</h2>
+            <div class="text-5xl font-bold my-8"><span id="final-score">0</span> / 20</div>
+            <div class="flex flex-col gap-3">
+                <button onclick="shareResult()" class="bg-blue-600 text-white py-4 rounded-2xl font-bold">📤 مشاركة النتيجة</button>
+                <button onclick="location.reload()" class="bg-white/10 text-white py-4 rounded-2xl">إعادة التحدي 🔄</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allQuestions = [
+            { id: 1, step: 1, type: 'choice', q: "ما هي الأشعة التي لها أقصر طول موجي وأعلى طاقة؟", options: ["موجات الراديو", "الضوء المرئي", "أشعة جاما", "الميكرويف"], correct: 2 },
+            { id: 2, step: 1, type: 'choice', q: "تتكون الموجات الكهرومغناطيسية من مجالين هما:", options: ["كهربائي ومغناطيسي", "صوتي وضوئي", "كيميائي وحركي", "حراري ونووي"], correct: 0 },
+            { id: 3, step: 1, type: 'boolean', q: "الموجات الكهرومغناطيسية لا تحتاج لوسط مادي وتنتقل في الفراغ.", options: ["صح", "خطأ"], correct: 0 },
+            { id: 4, step: 1, type: 'choice', q: "الأشعة التي نستخدمها في الرؤية وتتحلل لألوان القوس هي:", options: ["فوق البنفسجية", "السينية", "الضوء المرئي", "تحت الحمراء"], correct: 2 },
+            { id: 5, step: 2, type: 'choice', q: "منظار هابل الفضائي يتميز بأنه:", options: ["راديوي", "ضوئي يعمل خارج الغلاف الجوي", "عاكس يستخدم عدسات"], correct: 1 },
+            { id: 6, step: 2, type: 'boolean', q: "المنظار الكاسر يستخدم المرايا المقعرة لتجميع الضوء.", options: ["صح", "خطأ (يستخدم عدسات)"], correct: 1 },
+            { id: 7, step: 2, type: 'choice', q: "أي نوع من المناظير يعمل 24 ساعة ولا يتأثر بالجو؟", options: ["العاكس", "الراديوي", "الكاسر"], correct: 1 },
+            { id: 8, step: 2, type: 'choice', q: "المنظار الذي يستخدم عدسة محدبة كبيرة تسمى 'الشيئية' هو:", options: ["المنظار الكاسر", "المنظار العاكس", "المنظار الراديوي"], correct: 0 },
+            { id: 9, step: 3, type: 'choice', q: "تبدو النجوم وكأنها تتحرك في السماء بسبب:", options: ["حركتها الحقيقية", "دوران الأرض حول محورها", "تغير المسافة"], correct: 1 },
+            { id: 10, step: 3, type: 'star', q: "ميزان حرارة النجوم: اضغطي على النجم **الأكثر حرارة** في الكون:", options: ["أزرق", "أصفر", "أحمر"], colors: ['blue', 'yellow', 'red'], correct: 0 },
+            { id: 11, step: 3, type: 'boolean', q: "النجم الأحمر هو النجم الأبرد والأقل درجة حرارة.", options: ["صح", "خطأ"], correct: 0 },
+            { id: 12, step: 3, type: 'choice', q: "المجموعات النجمية القطبية هي التي تظهر:", options: ["في الصيف فقط", "طوال العام فوق القطبين", "كل 10 سنوات"], correct: 1 },
+            { id: 13, step: 4, type: 'order', q: "رتبي مراحل حياة (نجم فوق عملاق):", items: ["سديم", "نجم أولي", "نجم فوق عملاق", "انفجار مستعر أعظم", "ثقب أسود"], correctOrder: [0,1,2,3,4] },
+            { id: 14, step: 4, type: 'choice', q: "إذا كان لُب النجم المتبقي ضخماً جداً (أكبر من الشمس بـ 3 مرات) يصبح:", options: ["قزماً أبيض", "نجماً نيوترونياً", "ثقباً أسود"], correct: 2 },
+            { id: 15, step: 4, type: 'choice', q: "ما هي المرحلة التي تقضي فيها الشمس معظم حياتها؟", options: ["السديم", "التتابع الرئيسي", "العملاق الأحمر"], correct: 1 },
+            { id: 16, step: 4, type: 'boolean', q: "ينتهي النجم المتوسط (كالشمس) في النهاية كقزم أسود.", options: ["صح", "خطأ"], correct: 0 },
+            { id: 17, step: 5, type: 'choice', q: "ما نوع مجرة درب التبانة التي ننتمي إليها؟", options: ["إهليلجية", "غير منتظمة", "حلزونية"], correct: 2 },
+            { id: 18, step: 5, type: 'choice', q: "المجرة التي تظهر على شكل كرة وتخلو من الغبار:", options: ["إهليلجية", "حلزونية", "غير منتظمة"], correct: 0 },
+            { id: 19, step: 5, type: 'choice', q: "تستخدم السنة الضوئية لقياس:", options: ["عمر النجوم", "المسافات الفضائية", "سرعة الدوران"], correct: 1 },
+            { id: 20, step: 5, type: 'boolean', q: "الكون يتوسع باستمرار والمجرات تبتعد عن بعضها.", options: ["صح", "خطأ"], correct: 0 }
+        ];
+
+        let currentIdx = 0, score = 0, missedQuestions = [], userSelection = null, isMasteryMode = false;
+
+        function startApp() {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                renderQuestion();
+            }, 800);
+        }
+
+        function renderQuestion() {
+            isMasteryMode = false;
+            const q = allQuestions[currentIdx];
+            updateVisuals(q.step);
+            
+            let html = `<h2 class="text-blue-400 text-sm font-bold mb-2">المهمة ${currentIdx + 1}:</h2>`;
+            html += `<h3 class="text-2xl font-bold mb-8 leading-relaxed">${q.q}</h3>`;
+            
+            if (q.type === 'choice' || q.type === 'boolean') {
+                html += `<div class="grid gap-3">`;
+                q.options.forEach((opt, i) => html += `<button onclick="selectOption(${i}, 'opt')" class="btn-choice opt-btn" id="opt-${i}">${opt}</button>`);
+                html += `</div>`;
+            } else if (q.type === 'star') {
+                html += `<div class="flex justify-around items-center py-10">`;
+                q.colors.forEach((col, i) => html += `<div class="text-center"><div onclick="selectOption(${i}, 'opt')" id="opt-${i}" class="star-option star-${col} mb-3 mx-auto"></div><span class="text-sm text-gray-400">${q.options[i]}</span></div>`);
+                html += `</div>`;
+            } else if (q.type === 'order') {
+                html += `<div id="drag-container" class="space-y-2">`;
+                [...q.items].sort(() => Math.random() - 0.5).forEach((item, i) => html += `<div draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" class="drag-item" id="drag-${i}">${item}</div>`);
+                html += `</div>`;
+                userSelection = "order-active";
+            }
+            document.getElementById('question-area').innerHTML = html;
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function updateVisuals(step) {
+            document.querySelectorAll('.nav-step').forEach((s, i) => s.classList.toggle('active', (i + 1) === step));
+            document.getElementById('progress-bar').style.width = ((currentIdx / 20) * 100) + "%";
+        }
+
+        function selectOption(idx, prefix) {
+            userSelection = idx;
+            const area = document.getElementById(isMasteryMode ? 'mastery-area' : 'question-area');
+            area.querySelectorAll('.opt-btn, .star-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`${prefix}-${idx}`).classList.add('selected');
+        }
+
+        function submitAnswer() {
+            if (userSelection === null) return;
+            const q = allQuestions[currentIdx];
+            let correct = (q.type === 'order') ? 
+                JSON.stringify([...document.getElementById('drag-container').children].map(el => el.innerText.trim())) === JSON.stringify(q.items) :
+                (userSelection === q.correct);
+
+            if (correct) score++; else missedQuestions.push(q);
+            currentIdx++; userSelection = null;
+            if (currentIdx < allQuestions.length) renderQuestion(); else startMastery();
+        }
+
+        function startMastery() {
+            if (missedQuestions.length === 0) { showFinal(); return; }
+            isMasteryMode = true;
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('mastery-container').classList.remove('hidden');
+            renderMastery();
+        }
+
+        function renderMastery() {
+            const q = missedQuestions[0];
+            let html = `<h3 class="text-xl font-bold mb-6">${q.q}</h3>`;
+            if (q.type === 'choice' || q.type === 'boolean') {
+                html += `<div class="grid gap-2">`;
+                q.options.forEach((opt, i) => html += `<button onclick="selectOption(${i}, 'm-opt')" class="btn-choice opt-btn" id="m-opt-${i}">${opt}</button>`);
+                html += `</div>`;
+            } else if (q.type === 'star') {
+                html += `<div class="flex justify-around items-center py-6">`;
+                q.colors.forEach((col, i) => html += `<div class="text-center"><div onclick="selectOption(${i}, 'm-opt')" id="m-opt-${i}" class="star-option star-${col} mb-2 mx-auto"></div><span class="text-sm text-gray-400">${q.options[i]}</span></div>`);
+                html += `</div>`;
+            } else {
+                html += `<div id="drag-container" class="space-y-2">`;
+                [...q.items].sort(() => Math.random() - 0.5).forEach((item, i) => html += `<div draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)" class="drag-item" id="m-drag-${i}">${item}</div>`);
+                html += `</div>`;
+                userSelection = "order-active";
+            }
+            document.getElementById('mastery-area').innerHTML = html;
+        }
+
+        function submitMastery() {
+            if (userSelection === null) return;
+            const q = missedQuestions[0];
+            let correct = (q.type === 'order') ? 
+                JSON.stringify([...document.getElementById('drag-container').children].map(el => el.innerText.trim())) === JSON.stringify(q.items) :
+                (userSelection === q.correct);
+
+            if (correct) { missedQuestions.shift(); userSelection = null; if (missedQuestions.length > 0) renderMastery(); else showFinal(); }
+            else { alert("حاولي مرة أخرى!"); }
+        }
+
+        function showFinal() {
+            document.getElementById('mastery-container').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+        }
+
+        function shareResult() {
+            const text = `🚀 لقد أتممت مغامرة علوم الكون! \n⭐ نتيجتي: ${score}/20 \n🔗 جربي التحدي: ${window.location.href}`;
+            const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            const t = document.getElementById('toast'); t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+        function drop(ev) {
+            ev.preventDefault(); const data = ev.dataTransfer.getData("text");
+            const dragged = document.getElementById(data); const target = ev.target.closest('.drag-item');
+            if (target && dragged !== target) {
+                const rect = target.getBoundingClientRect();
+                const next = (ev.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                target.parentNode.insertBefore(dragged, next ? target.nextSibling : target);
+            }
+        }
+    </script>
+</body>
+</html>
